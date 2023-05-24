@@ -1,5 +1,7 @@
 [dev-packages]
 black = "*"
-pytest = "*"
 coverage = "*"
+numpy = "*"
+pytest = "*"
 pytest-cov = "*"
+scikit-learn = "*"
