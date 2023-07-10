@@ -52,6 +52,24 @@ def partition(array, low, high):
     return pb - 1
 
 
+def bubblesort(array):
+    """Sort array in ascending order. Done inplace.
+    Time complexity is O(N^2), space complexity is O(1).
+
+    :param list array: unordered list of numbers/letters.
+    """
+    n = len(array)
+    for i in range(n):
+        sorted = True
+        for j in range(n - i - 1):
+            if array[j] > array[j + 1]:
+                swap(array, j, j + 1)
+            sorted = False
+        if sorted:
+            break
+    return array
+
+
 def swap(array, i, j):
     """Swap two elements in an array.
 
