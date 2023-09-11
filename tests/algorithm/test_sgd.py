@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from interview.algorithm.sgd import SGD
 
@@ -29,16 +30,22 @@ def ols(x, y):
     return beta_hat, cov_beta_hat
 
 
-def test_sgd_linear_regression():
+def test_sgd_linear_regression(capfd):
     n, k = 100, 2
     beta = np.array([1, 1, 10])
     x = np.concatenate([np.ones((n, 1)), np.random.randn(n, k)], axis=1)
     y = np.matmul(x, beta) + np.random.randn(n)
 
     sgd = SGD(
-        learning_rate=0.01, decay_rate=0.8, max_iteration=10000, batch_size=10, seed=0
+        learning_rate=0.01,
+        decay_rate=0.8,
+        max_iteration=10000,
+        batch_size=10,
+        seed=0,
+        tolerance=1e-6,
     )
-    beta_sgd = sgd.fit(ssr_gradient, x, y, n_var=3)
+    sgd.fit(ssr_gradient, x, y, n_var=3)
+    beta_sgd = sgd.get_params()
 
     beta_hat, cov_beta_hat = ols(x, y)
     for i in range(k + 1):
@@ -47,3 +54,6 @@ def test_sgd_linear_regression():
             <= beta_sgd[i]
             <= beta_hat[i] + np.sqrt(cov_beta_hat[i, i])
         )
+    sgd.print_fit_info()
+    out, err = capfd.readouterr()
+    assert out == "max iteration reached\n"

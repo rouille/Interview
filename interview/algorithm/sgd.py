@@ -28,7 +28,10 @@ class SGD:
         self.max_iteration = max_iteration
         self.batch_size = batch_size
         self.tolerance = tolerance
-        self.seed = None if seed is None else seed
+        self.seed = seed
+
+        self.var = None
+        self.info = {"iteration": self.max_iteration}
 
     def fit(self, gradient, x, y, n_var, var=None):
         """Perform gradient descent
@@ -38,24 +41,37 @@ class SGD:
         :param np.ndarray y: outputs.
         :param int n_var: number of decision variables.
         :param np.ndarray var: starting value of decision variables.
-        :return: (*np.ndarray*) -- value of paramters that minimizes the cost function.
         """
         rng = np.random.default_rng(self.seed)
-        var = rng.normal(size=n_var) if var is None else np.array(var)
+        self.var = rng.normal(size=n_var) if var is None else np.array(var)
 
         n = x.shape[0]
         diff = 0
-        for _ in range(self.max_iteration):
+        for i in range(1, self.max_iteration + 1):
             idx = rng.permutation(n)
             x, y = x[idx], y[idx]
             for start in range(0, n, self.batch_size):
                 stop = start + self.batch_size
                 x_batch, y_batch = x[start:stop], y[start:stop]
-                grad = np.array(gradient(x_batch, y_batch, var))
+                grad = np.array(gradient(x_batch, y_batch, self.var))
                 diff = self.decay_rate * diff - self.learning_rate * grad
 
                 if np.linalg.norm(grad) < self.tolerance:
+                    self.info["iteration"] = i
                     break
 
-                var += diff
-        return var
+                self.var += diff
+
+    def get_params(self):
+        """Get parameters of that minimize the cost function
+
+        :return: (*np.ndarray*) -- value of paramters
+        """
+        return self.var
+
+    def print_fit_info(self):
+        """Get information on the fit."""
+        if self.info["iteration"] != self.max_iteration:
+            print(f"tolerance met after {self.info['iteration']} iteration")
+        else:
+            print("max iteration reached")
